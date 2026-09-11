@@ -1,5 +1,5 @@
-import { readFileSync, readdirSync } from 'node:fs';
-import { basename, extname, join } from 'node:path';
+import { existsSync, readFileSync, readdirSync } from 'node:fs';
+import { basename, dirname, extname, join } from 'node:path';
 
 function headingLevel(line) {
   const match = /^(#{1,6})\s+/.exec(line);
@@ -52,6 +52,26 @@ export function extractInputExample(markdown) {
   }
 }
 
+function loadDefaultSettings(filePath, call) {
+  const settingsPath = join(dirname(filePath), '..', '..', 'default-setting.json');
+  if (!existsSync(settingsPath)) return undefined;
+
+  let settings;
+  try {
+    settings = JSON.parse(readFileSync(settingsPath, 'utf8'));
+  } catch (error) {
+    throw new Error(`默认设置文件不是合法 JSON：${error instanceof Error ? error.message : String(error)}`);
+  }
+  if (settings === null || Array.isArray(settings) || typeof settings !== 'object') {
+    throw new Error('默认设置文件的顶层必须是 JSON 对象');
+  }
+
+  const shared = settings._shared;
+  const prompt = settings[call];
+  if (shared === undefined && prompt === undefined) return undefined;
+  return { shared, prompt };
+}
+
 export function loadPromptFile(filePath) {
   const markdown = readFileSync(filePath, 'utf8');
   const stem = basename(filePath, extname(filePath));
@@ -65,6 +85,7 @@ export function loadPromptFile(filePath) {
     description: metadata.description || `加载 ${call} 提示词`,
     filePath,
     markdown,
+    defaultSettings: loadDefaultSettings(filePath, call),
     inputExample: extractInputExample(markdown)
   };
 }
@@ -124,7 +145,13 @@ export function parseEnvelopeData(call, rawData, example) {
 }
 
 export function renderPrompt(definition, envelope) {
-  if (!envelope) return definition.markdown;
-  return `${definition.markdown.trimEnd()}\n\n## 本次调用输入\n\n\`\`\`json\n${JSON.stringify(envelope.data, null, 2)}\n\`\`\`\n`;
+  let rendered = definition.markdown.trimEnd();
+  if (definition.defaultSettings !== undefined) {
+    rendered += `\n\n## 运行时默认设置\n\n以下内容来自未提交的 \`default-setting.json\`：\n\n\`\`\`json\n${JSON.stringify(definition.defaultSettings, null, 2)}\n\`\`\``;
+  }
+  if (envelope) {
+    rendered += `\n\n## 本次调用输入\n\n\`\`\`json\n${JSON.stringify(envelope.data, null, 2)}\n\`\`\``;
+  }
+  return `${rendered}\n`;
 }
 
