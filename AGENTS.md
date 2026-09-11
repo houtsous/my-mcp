@@ -10,7 +10,7 @@
 
 `mcps/prompt-call` 是用户会话与 Markdown 提示词之间的调用桥梁。
 
-- `prompts/` 中每个 `.md` 文件动态注册为一个 MCP 原生 Prompt，文件名（不含扩展名）就是 `call`。
+- `prompts/` 中每个 Prompt 必须使用 `prompts/<prompt-name>/<prompt-name>.md` 的同名目录结构；每个子目录动态注册为一个 MCP 原生 Prompt，目录名和 Markdown 文件名（不含扩展名）都必须与 `call` 一致。
 - MCP 原生请求中的 Prompt `name` 对应统一信封中的 `call`；`arguments.data` 对应 `data`。
 - 服务内部统一使用 `{ data: unknown, call: string }` 表示一次调用。
 - JSON 示例定义一条输入的数据结构；`data` 可以是单条值，也可以是由该结构组成的数组。单条用户指令组装为单值，多条独立指令按原顺序组装为数组。
