@@ -1,5 +1,7 @@
 # 服务器运维纪要
 
+> 实例专属值来自可选且不提交的 `default-setting.json`。没有“运行时默认设置”时，所有 `{{...}}` 均视为未设置，必须询问用户，禁止推断。  
+
 ## 使用说明
 
 本文件是服务器运维会话的初始化上下文和持续维护纪要，不是要求用户再次说明“发生了哪些变化”的问卷。
@@ -73,40 +75,40 @@ AI 在整个运维会话中持续跟踪已经执行并验证的变化，并遵�
 
 #### 3. 阿里云安全组收敛
 
-- 删除公网 SSH TCP 22 入方向规则，公网地址 `118.178.229.176:22` 已无法直接连接。
+- 删除公网 SSH TCP 22 入方向规则，公网地址 `{{shared.server.public_ip}}:22` 已无法直接连接。
 - 删除无实际服务监听的公网 RDP TCP 3389 入方向规则。
 - OpenVPN 隧道入口使用默认 UDP 1194，删除误建的 TCP 1194 规则。
 - 保留 OpenVPN Web 管理与用户门户 TCP 943，以及网站所需的 HTTP/HTTPS 公网入口。
 - 当前内部工具的公网 HTTP 入口为：Jenkins TCP 8080、Nacos TCP 8081、Windmill TCP 8082。
-- SSH、MySQL 和 Nacos 服务 API 仍通过 VPN 访问主私网 IP `172.20.105.210`。
+- SSH、MySQL 和 Nacos 服务 API 仍通过 VPN 访问主私网 IP `{{shared.server.private_ip}}`。
 
 #### 4. OpenVPN Access Server 部署
 
 - 使用 Docker Compose 部署 OpenVPN Access Server，镜像为 `openvpn/openvpn-as:latest`。
 - 部署目录为 `/opt/openvpn-as`，持久化数据目录为 `/opt/openvpn-as/data`。
 - 使用应用默认端口：TCP 943 提供 Web 管理及用户门户，UDP 1194 提供 VPN 隧道。
-- VPN 公网接入地址为 `118.178.229.176`，管理页面为 `https://118.178.229.176:943/admin/`。
-- VPN 设置为分流访问，仅发布单台主机资源 `172.20.105.210/32`，不接管用户的全部互联网流量。
-- Windows OpenVPN Connect 已连接成功，客户端获得 VPN 地址 `172.27.224.2`。
-- 已验证 VPN 建立后可访问主私网 IP `172.20.105.210` 的 SSH 22 和 MySQL 3306 端口。
+- VPN 公网接入地址为 `{{shared.server.public_ip}}`，管理页面为 `https://{{shared.server.public_ip}}:943/admin/`。
+- VPN 设置为分流访问，仅发布单台主机资源 `{{shared.server.private_ip}}/32`，不接管用户的全部互联网流量。
+- Windows OpenVPN Connect 已连接成功，客户端获得 VPN 地址 `{{shared.server.vpn_client_ip}}`。
+- 已验证 VPN 建立后可访问主私网 IP `{{shared.server.private_ip}}` 的 SSH 22 和 MySQL 3306 端口。
 - 当前使用未激活许可证的免费额度，支持 2 个并发 VPN 连接。
 
 #### 5. MySQL 改为 VPN 私网访问
 
-- MySQL Docker 端口绑定由 `127.0.0.1:3306:3306` 调整为 `172.20.105.210:3306:3306`。
-- MySQL 容器已重新创建，主机仅在主私网 IP `172.20.105.210:3306` 提供连接。
+- MySQL Docker 端口绑定由 `127.0.0.1:3306:3306` 调整为 `{{shared.server.private_ip}}:3306:3306`。
+- MySQL 容器已重新创建，主机仅在主私网 IP `{{shared.server.private_ip}}:3306` 提供连接。
 - 阿里云安全组未开放公网 3306，MySQL 不对公网暴露。
-- Navicat 已改为直接连接 `172.20.105.210:3306`，不再使用 SSH 隧道，并已测试连接成功。
+- Navicat 已改为直接连接 `{{shared.server.private_ip}}:3306`，不再使用 SSH 隧道，并已测试连接成功。
 
 #### 6. 最终访问策略
 
-- 私网管理：连接 OpenVPN 后，通过 `172.20.105.210` 访问 SSH、MySQL，以及 Nacos API 8848/9848。
+- 私网管理：连接 OpenVPN 后，通过 `{{shared.server.private_ip}}` 访问 SSH、MySQL，以及 Nacos API 8848/9848。
 
-- 公网工具入口：Jenkins 使用 `http://118.178.229.176:8080`，Nacos 使用 `http://118.178.229.176:8081`，Windmill 使用 `http://118.178.229.176:8082`。
+- 公网工具入口：Jenkins 使用 `http://{{shared.server.public_ip}}:8080`，Nacos 使用 `http://{{shared.server.public_ip}}:8081`，Windmill 使用 `http://{{shared.server.public_ip}}:8082`。
 
 - 项目站点端口约定：10000 及以上端口用于项目站点，并要求配置 HTTPS；内部工具不占用该端口段。
 
-- 后续新增 Oracle、PostgreSQL 等管理型服务时，应将服务端口绑定到 `172.20.105.210`，不在阿里云安全组开放公网数据库端口；现有 `172.20.105.210/32` VPN 资源规则无需重复添加。
+- 后续新增 Oracle、PostgreSQL 等管理型服务时，应将服务端口绑定到 `{{shared.server.private_ip}}`，不在阿里云安全组开放公网数据库端口；现有 `{{shared.server.private_ip}}/32` VPN 资源规则无需重复添加。
 
 ### 配置中心与内部工具
 
@@ -114,7 +116,7 @@ AI 在整个运维会话中持续跟踪已经执行并验证的变化，并遵�
 
 - 使用 Docker Compose 部署 Nacos `3.2.3`，部署目录为 `/opt/nacos`，运行模式为 standalone，使用内嵌存储。
 - Nacos Console 映射为公网 `0.0.0.0:8081 -> 8080`。
-- Nacos 服务 API 仅绑定私网：`172.20.105.210:8848` 和 `172.20.105.210:9848`。
+- Nacos 服务 API 仅绑定私网：`{{shared.server.private_ip}}:8848` 和 `{{shared.server.private_ip}}:9848`。
 - 持久化目录为 `/opt/nacos/data` 和 `/opt/nacos/logs`；鉴权密钥保存在权限为 `600` 的 `/opt/nacos/.env`，纪要不记录具体值。
 - JVM 设置为 XMS 512 MB、XMX 768 MB；容器内存上限 1536 MB、CPU 上限 1.5、PID 上限 512。
 - Docker JSON 日志轮转设置为单文件 10 MB、保留 3 个文件；Tomcat access log 已关闭。
@@ -130,7 +132,7 @@ AI 在整个运维会话中持续跟踪已经执行并验证的变化，并遵�
 
 #### 3. Windmill Web 入口迁移
 
-- Windmill Web 入口由 `https://118.178.229.176:10000` 迁移为 `http://118.178.229.176:8082`。
+- Windmill Web 入口由 `https://{{shared.server.public_ip}}:10000` 迁移为 `http://{{shared.server.public_ip}}:8082`。
 - Windmill Base URL 和 GitHub OAuth 回调地址已同步修改为 8082，GitHub 授权登录已验证成功。
 - Nginx 配置文件为 `/opt/nginx/conf.d/windmill.conf`，Compose 文件为 `/opt/nginx/docker-compose.yml`。
 - 已删除 Nginx 的 10000 SSL 监听及 Compose 的 `10000:10000` 映射；`nginx -t` 验证成功，主机已确认不再监听 10000。
