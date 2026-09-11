@@ -18,6 +18,43 @@ prompts/
 
 目录名、Markdown 文件名（不含扩展名）和 Prompt 的 `call` 应保持一致。新增 Prompt 时创建新的同名目录，不要把 Markdown 文件直接放在 `prompts/` 根目录。
 
+## 私有默认设置
+
+实例专属默认值统一放在可选文件：
+
+```text
+mcps/prompt-call/default-setting.json
+```
+
+使用 JSON 而不是 XML：这里是简单的对象、数组和基础类型，JSON 更紧凑，也能被 Node.js 直接解析。
+
+- `default-setting.json` 已被 Git 忽略，禁止提交。
+- 仓库只提交脱敏的 `default-setting.example.json`。
+- 文件存在时，服务读取 `_shared` 与当前 Prompt 名称对应的设置，并追加成“运行时默认设置”。
+- 文件不存在或没有当前 Prompt 的配置时，不报错，也不设置默认值。
+- 不得把密码、Token、私钥、IP 或用户目录写进已提交的 Prompt。
+- 直接使用 GitHub MCP 读取 Markdown 时，该忽略文件不可见，因此不会获得私人默认值。
+
+```json
+{
+  "_shared": {
+    "server": {
+      "public_ip": "<public-ip>",
+      "private_ip": "<private-ip>",
+      "vpn_client_ip": "<vpn-client-ip>"
+    }
+  },
+  "local-env-manage": {
+    "directories": {
+      "download_root": {
+        "fun": "Markdown、Word 等普通下载文件",
+        "value": "<absolute-path>"
+      }
+    }
+  }
+}
+```
+
 ## 在对话中调用
 
 用户不需要手工编写 MCP 协议请求。只要在对话中明确指定 MCP Server、Prompt 名称和 `data` 参数，客户端 Agent 会负责将请求转换为原生 MCP Prompt 调用。
