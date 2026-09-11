@@ -66,10 +66,19 @@ function loadDefaultSettings(filePath, call) {
     throw new Error('默认设置文件的顶层必须是 JSON 对象');
   }
 
-  const shared = settings._shared;
-  const prompt = settings[call];
-  if (shared === undefined && prompt === undefined) return undefined;
-  return { shared, prompt };
+  const common = settings.common;
+  const promptItems = settings.prompt_items;
+
+  if (common !== undefined && (common === null || Array.isArray(common) || typeof common !== 'object')) {
+    throw new Error('default-setting.json 的 common 必须是 JSON 对象');
+  }
+  if (promptItems !== undefined && (promptItems === null || Array.isArray(promptItems) || typeof promptItems !== 'object')) {
+    throw new Error('default-setting.json 的 prompt_items 必须是 JSON 对象');
+  }
+
+  const prompt = promptItems?.[call];
+  if (common === undefined && prompt === undefined) return undefined;
+  return { common, prompt };
 }
 
 export function loadPromptFile(filePath) {
