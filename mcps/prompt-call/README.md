@@ -30,25 +30,35 @@ mcps/prompt-call/default-setting.json
 
 - `default-setting.json` 已被 Git 忽略，禁止提交。
 - 仓库只提交脱敏的 `default-setting.example.json`。
-- 文件存在时，服务读取 `_shared` 与当前 Prompt 名称对应的设置，并追加成“运行时默认设置”。
+- 文件存在时，服务读取 `common` 与 `prompt_items[Prompt 名称]` 对应的设置，并追加成“运行时默认设置”。
 - 文件不存在或没有当前 Prompt 的配置时，不报错，也不设置默认值。
 - 不得把密码、Token、私钥、IP 或用户目录写进已提交的 Prompt。
 - 直接使用 GitHub MCP 读取 Markdown 时，该忽略文件不可见，因此不会获得私人默认值。
 
 ```json
 {
-  "_shared": {
-    "server": {
-      "public_ip": "<public-ip>",
-      "private_ip": "<private-ip>",
-      "vpn_client_ip": "<vpn-client-ip>"
-    }
-  },
-  "local-env-manage": {
-    "directories": {
-      "download_root": {
-        "fun": "Markdown、Word 等普通下载文件",
-        "value": "<absolute-path>"
+  "common": {},
+  "prompt_items": {
+    "local-env-manage": {
+      "directories": {
+        "download_root": {
+          "fun": "Markdown、Word 等普通下载文件",
+          "value": "<absolute-path>"
+        }
+      }
+    },
+    "server-maintenance-rule": {
+      "server": {
+        "public_ip": "<public-ip>",
+        "private_ip": "<private-ip>",
+        "vpn_client_ip": "<vpn-client-ip>"
+      }
+    },
+    "server-maintenance-summary": {
+      "server": {
+        "public_ip": "<public-ip>",
+        "private_ip": "<private-ip>",
+        "vpn_client_ip": "<vpn-client-ip>"
       }
     }
   }
