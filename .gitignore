@@ -5,3 +5,5 @@ coverage/
 .env
 .DS_Store
 
+# prompt-call private runtime defaults
+mcps/prompt-call/default-setting.json
