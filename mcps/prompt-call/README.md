@@ -1,23 +1,74 @@
-# prompt-call
+## 在对话中调用
 
-把 `prompts/` 中的 Markdown 文件动态注册为 MCP 原生 Prompt。文件名（不含 `.md`）是 Prompt 的调用名。
+用户不需要手工编写 MCP 协议请求。只要在对话中明确指定 MCP Server、Prompt 名称和 `data` 参数，客户端 Agent 会负责将请求转换为原生 MCP Prompt 调用。
 
-## 调用模型
+### 推荐提示词模板
 
-逻辑输入统一表示为：
+```text
+调用 prompt-call 的【Prompt 名称】，将下面的 JSON 作为 data 参数传入：
 
-```ts
+【JSON 数据】
+```
+
+### 单条参数示例
+
+```text
+调用 prompt-call 的 local-env-manage，将下面的 JSON 作为 data 参数传入：
+
 {
-  call: string;
-  data: unknown | unknown[];
+  "key": "download_root",
+  "fun": "",
+  "value": "F:/downloads",
+  "opt": "update"
 }
 ```
 
-在 MCP 原生协议中，`call` 使用 `prompts/get.params.name` 表达，`data` 使用 `prompts/get.params.arguments.data` 表达。由于 MCP Prompt 参数在线路上是字符串，`data` 传输时使用 JSON 字符串。
+### 多条参数示例
 
-JSON 示例描述一条输入的数据结构。用户只表达一条指令时，`data` 使用单值；表达多条独立指令时，`data` 使用同结构数组，并保持用户语句顺序。
+一次表达多条独立指令时，把同结构对象组成数组，并保持指令的先后顺序：
 
-例如：
+```text
+调用 prompt-call 的 local-env-manage，将下面的数组作为 data 参数传入：
+
+[
+  {
+    "key": "download_root",
+    "fun": "",
+    "value": "F:/downloads",
+    "opt": "update"
+  },
+  {
+    "key": "model_root",
+    "fun": "",
+    "value": "E:/models",
+    "opt": "create"
+  }
+]
+```
+
+### 统一信封格式
+
+也可以在对话中直接使用以下结构：
+
+```json
+{
+  "call": "local-env-manage",
+  "data": {
+    "key": "download_root",
+    "fun": "",
+    "value": "F:/downloads",
+    "opt": "update"
+  }
+}
+```
+
+其中：
+
+- `call` 表示需要调用的 Prompt。
+- `data` 表示从用户会话中整理出的参数，可以是单个值，也可以是数组。
+- `call` 不会作为 Prompt 参数传入，而是由客户端 Agent 转换成 MCP Prompt 名称。
+
+客户端最终产生的原生 MCP 请求大致如下：
 
 ```json
 {
@@ -28,50 +79,10 @@ JSON 示例描述一条输入的数据结构。用户只表达一条指令时，
 }
 ```
 
-## 参数发现
+### 注意事项
 
-如果 Markdown 包含以下约定，服务会提取第一个 JSON 代码块作为参数范式：
-
-````markdown
-## 接收输入
-
-### JSON
-
-```json
-{
-  "key": "example"
-}
-```
-````
-
-`接受输入` 也受支持。范式会出现在 `data` 参数的说明中，并用于以下校验：
-
-- 顶层和嵌套 JSON 基础类型；
-- 对象允许的字段；
-- 数组元素类型（示例数组非空时）。
-
-示例字段不自动视为全部必填。条件必填、枚举和业务规则仍由 Prompt 正文说明。
-
-没有上述输入范式的文件会注册为无参数 Prompt。
-
-## 运行
-
-在仓库根目录执行：
-
-```powershell
-npm install
-npm start
-```
-
-Codex 本地配置示例：
-
-```toml
-[mcp_servers.prompt_call]
-command = "node"
-args = ["E:/my-mcp/mcps/prompt-call/src/index.js"]
-enabled = true
-```
-
-发布到 npm 后，客户端也可以通过 `npx -y prompt-call-mcp` 启动。`node_modules/` 不属于发布内容，部署端根据 `package.json` 安装依赖。
-
-修改 Prompt 正文会在下一次调用时生效；新增、删除文件或改变参数范式后需要重启 MCP Server，以刷新 `prompts/list` 元数据。
+- `prompt-call.local-env-manage` 可以作为对话中的简写，但它不是 MCP 协议里的正式 Prompt 名称。
+- 推荐明确写成“调用 `prompt-call` 的 `local-env-manage`”。
+- 输入必须是合法 JSON，字段名和字符串值必须使用双引号。
+- MCP Server 不会直接收到完整的用户对话，只会收到客户端 Agent 根据对话组装出的 Prompt 名称和参数。
+- Prompt 支持哪些参数，以对应 Markdown 文件中“接收输入/接受输入 → JSON”所声明的参数范式为准。
