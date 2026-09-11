@@ -71,8 +71,8 @@ export function loadPromptFile(filePath) {
 
 export function loadPromptDirectory(promptDirectory) {
   const prompts = readdirSync(promptDirectory, { withFileTypes: true })
-    .filter(entry => entry.isFile() && entry.name.toLowerCase().endsWith('.md'))
-    .map(entry => loadPromptFile(join(promptDirectory, entry.name)))
+    .filter(entry => entry.isDirectory())
+    .map(entry => loadPromptFile(join(promptDirectory, entry.name, `${entry.name}.md`)))
     .sort((left, right) => left.call.localeCompare(right.call));
 
   const names = new Set();
