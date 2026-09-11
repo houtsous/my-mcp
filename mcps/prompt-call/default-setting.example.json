@@ -1,16 +1,26 @@
 {
-  "_shared": {
-    "server": {
-      "public_ip": "<public-ip>",
-      "private_ip": "<private-ip>",
-      "vpn_client_ip": "<vpn-client-ip>"
-    }
-  },
-  "local-env-manage": {
-    "directories": {
-      "download_root": {
-        "fun": "Markdown、Word 等普通下载文件",
-        "value": "<absolute-path>"
+  "common": {},
+  "prompt_items": {
+    "local-env-manage": {
+      "directories": {
+        "download_root": {
+          "fun": "Markdown、Word 等普通下载文件",
+          "value": "<absolute-path>"
+        }
+      }
+    },
+    "server-maintenance-rule": {
+      "server": {
+        "public_ip": "<public-ip>",
+        "private_ip": "<private-ip>",
+        "vpn_client_ip": "<vpn-client-ip>"
+      }
+    },
+    "server-maintenance-summary": {
+      "server": {
+        "public_ip": "<public-ip>",
+        "private_ip": "<private-ip>",
+        "vpn_client_ip": "<vpn-client-ip>"
       }
     }
   }
