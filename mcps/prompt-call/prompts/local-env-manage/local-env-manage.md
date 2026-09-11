@@ -41,11 +41,14 @@ mcps/prompt-call/default-setting.json
 
 ```json
 {
-  "local-env-manage": {
-    "directories": {
-      "download_root": {
-        "fun": "Markdown、Word 等普通下载文件",
-        "value": "X:/downloads"
+  "common": {},
+  "prompt_items": {
+    "local-env-manage": {
+      "directories": {
+        "download_root": {
+          "fun": "Markdown、Word 等普通下载文件",
+          "value": "X:/downloads"
+        }
       }
     }
   }
@@ -116,7 +119,7 @@ mcps/prompt-call/default-setting.json
 修改只允许编辑 `mcps/prompt-call/default-setting.json`：
 
 1. 文件不存在时，只有明确执行 `add`，或为内置项执行 `update`，才创建最小合法 JSON。
-2. 只修改 `local-env-manage.directories` 下的目标项，不改其他 Prompt 或 `_shared`。
+2. 只修改 `prompt_items.local-env-manage.directories` 下的目标项，不改其他 Prompt 或 `common`。
 3. 写入后重新读取并验证，再显示全部最新配置。
 4. 未设置的内置项明确标记为“未设置”。
 5. 客户端没有文件写入能力、文件不可写或回读失败时，不得声称已持久化。
