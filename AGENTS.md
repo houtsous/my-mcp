@@ -23,6 +23,7 @@
 
 ## 内容边界
 
+- 可选私有默认值文件固定为 `mcps/prompt-call/default-setting.json`，使用 `{ common: object, prompt_items: Record<string, object> }` 结构；`common` 对所有 Prompt 可见，`prompt_items[call]` 只对对应 Prompt 可见。该文件必须被 Git 忽略，缺失时不设置默认值。
 - Prompt 内容的唯一运行时来源是 `mcps/prompt-call/prompts/`。
 - 不得在源码中硬编码具体 Prompt 名称、业务字段或服务器参数。
 - 不得把密码、Token、私钥或其他秘密写入仓库。
