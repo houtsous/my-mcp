@@ -1,6 +1,7 @@
 # 新服务器维护规范与 AI 接管提示词
 
-> 适用服务器：`156.225.23.175`  
+> 实例专属值来自可选且不提交的 `default-setting.json`。没有“运行时默认设置”时，所有 `{{...}}` 均视为未设置，必须询问用户，禁止推断。  
+> 适用服务器：`{{shared.server.public_ip}}`  
 > 操作系统：Ubuntu 22.04 LTS  
 > 用途：统一后续人工或 AI 的部署、变更、备份和排障方式，禁止不同维护者随意改变架构。
 
@@ -255,7 +256,7 @@ B 端项目创建 `/opt/nginx/conf.d/xxxapp.conf`：
 server {
     listen 10000 ssl;
     listen [::]:10000 ssl;
-    server_name 156.225.23.175;
+    server_name {{shared.server.public_ip}};
 
     include /etc/nginx/conf.d/shared-ip-ssl.inc;
 
@@ -288,7 +289,7 @@ server {
 server {
     listen 8080;
     listen [::]:8080;
-    server_name 156.225.23.175;
+    server_name {{shared.server.public_ip}};
 
     client_max_body_size 100m;
 
@@ -339,8 +340,8 @@ docker compose up -d --force-recreate nginx
 本机 HTTPS 验证模板：
 
 ```bash
-curl -I --resolve 156.225.23.175:10000:127.0.0.1 \
-  https://156.225.23.175:10000
+curl -I --resolve {{shared.server.public_ip}}:10000:127.0.0.1 \
+  https://{{shared.server.public_ip}}:10000
 ```
 
 本机 HTTP 验证模板：
@@ -373,7 +374,7 @@ ss -lntp
 外部地址：
 
 ```text
-http://156.225.23.175:8080
+http://{{shared.server.public_ip}}:8080
 ```
 
 关键规则：
@@ -396,7 +397,7 @@ http://156.225.23.175:8080
 外部地址：
 
 ```text
-http://156.225.23.175:8081
+http://{{shared.server.public_ip}}:8081
 ```
 
 关键规则：
@@ -462,7 +463,7 @@ http://156.225.23.175:8081
 
 ### 6.1 变更前
 
-1. 明确当前操作的是新服务器 `156.225.23.175`；
+1. 明确当前操作的是新服务器 `{{shared.server.public_ip}}`；
 2. 查看磁盘、内存、容器和端口状态；
 3. 查明服务实际使用的 Compose 文件、挂载目录、网络和端口；
 4. 备份即将修改的配置文件；
@@ -581,7 +582,7 @@ http://156.225.23.175:8081
 将下面内容连同本文件交给新的 AI。新的 AI 在提出或执行任何服务器操作前，都必须先遵守此提示词。
 
 ```text
-你正在维护我的 Ubuntu 22.04 服务器 156.225.23.175。请把
+你正在维护我的 Ubuntu 22.04 服务器 {{shared.server.public_ip}}。请把
 SERVER_MAINTENANCE_STANDARD.md 视为本服务器的最高优先级维护规范。
 
 在给出任何命令前，必须先阅读并复述与你当前任务有关的目录、Docker
